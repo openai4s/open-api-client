@@ -2585,6 +2585,7 @@ components:
         - prompt
 
     ImagesResponse:
+      type: object
       properties:
         created:
           type: integer
@@ -2887,7 +2888,6 @@ components:
         documents:
           description: |
             List of documents from which the answer for the input `question` should be derived. If this is an empty list, the question will be answered based on the question-answer examples.
-
             You should specify either `documents` or a `file`, but not both.
           type: array
           maxItems: 200
@@ -2898,7 +2898,6 @@ components:
         file:
           description: |
             The ID of an uploaded file that contains documents to search over. See [upload file](/docs/api-reference/files/upload) for how to upload a file of the desired format and purpose.
-
             You should specify either `documents` or a `file`, but not both.
           type: string
           nullable: true
@@ -2925,9 +2924,7 @@ components:
           nullable: true
           description: |
             Include the log probabilities on the `logprobs` most likely tokens, as well the chosen tokens. For example, if `logprobs` is 5, the API will return a list of the 5 most likely tokens. The API will always return the `logprob` of the sampled token, so there may be up to `logprobs+1` elements in the response.
-
             The maximum value for `logprobs` is 5. If you need more than this, please contact us through our [Help center](https://help.openai.com) and describe your use case.
-
             When `logprobs` is set, `completion` will be automatically added into `expand` to get the logprobs.
         max_tokens:
           description: The maximum number of tokens allowed for the generated answer
@@ -2965,7 +2962,10 @@ components:
         expand: &expand_configuration
           description: If an object name is in the list, we provide the full information of the object; otherwise, we only provide the object ID. Currently we support `completion` and `file` objects for expansion.
           type: array
-          items: {}
+          items:
+            type: object
+            default: {}
+            example: {}
           nullable: true
           default: []
         user: *end_user_param_configuration
