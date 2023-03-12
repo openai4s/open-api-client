@@ -3432,6 +3432,7 @@ components:
         - text
 
     Engine:
+      type: object
       title: Engine
       properties:
         id:
@@ -3450,6 +3451,7 @@ components:
         - ready
 
     Model:
+      type: object
       title: Model
       properties:
         id:
@@ -3467,6 +3469,7 @@ components:
         - owned_by
 
     OpenAIFile:
+      type: object
       title: OpenAIFile
       properties:
         id:
@@ -3495,6 +3498,7 @@ components:
         - purpose
 
     FineTune:
+      type: object
       title: FineTune
       properties:
         id:
@@ -3547,6 +3551,7 @@ components:
         - result_files
 
     FineTuneEvent:
+      type: object
       title: FineTuneEvent
       properties:
         object:
