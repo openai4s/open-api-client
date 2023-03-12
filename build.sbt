@@ -16,22 +16,22 @@ lazy val root = (project in file("."))
     Global / onChangedBuildSource := ReloadOnSourceChanges,
     scalacOptions += "-Wconf:any:s",
     Compile / guardrailTasks := List(
-      ScalaClient(file("src/main/resources/openapi.yaml"), pkg="io.github.paualarco.client", framework="akka-http",tracing = false
-       // encodeOptionalAs = codingOptional,
-       // decodeOptionalAs = codingRequiredNullable),
-     )        ,ScalaModels(file("src/main/resources/openapi.yaml"), pkg="io.github.paualarco.openai4s.models")
+      ScalaClient(file("src/main/resources/completions.yaml"), pkg="io.github.openapi4s.completions",  framework="http4s",tracing = false,
+        encodeOptionalAs = codingOptional,
+        decodeOptionalAs = codingRequiredNullable,
+     )
     ),
     // Adding dependencies in order to force Scala Steward to help us
     // update the g8 template as well
     libraryDependencies ++= Seq(
 
-     // "org.http4s"                  %% "http4s-dsl"                 % http4sV,
-     // "org.http4s"                  %% "http4s-ember-server"        % http4sV,
-     // "org.http4s"                  %% "http4s-ember-client"        % http4sV,
-     // "org.http4s"                  %% "http4s-circe"               % http4sV,
-      "com.typesafe.akka" %% "akka-actor"    % AkkaActor,
-      "com.typesafe.akka" %% "akka-http"     % AkkaHttp,
-      "com.typesafe.akka" %% "akka-stream"   % AkkaActor,
+      "org.http4s"                  %% "http4s-dsl"                 % http4sV,
+      "org.http4s"                  %% "http4s-ember-server"        % http4sV,
+      "org.http4s"                  %% "http4s-ember-client"        % http4sV,
+      "org.http4s"                  %% "http4s-circe"               % http4sV,
+      //"com.typesafe.akka" %% "akka-actor"    % AkkaActor,
+      //"com.typesafe.akka" %% "akka-http"     % AkkaHttp,
+      //"com.typesafe.akka" %% "akka-stream"   % AkkaActor,
       "io.circe"                    %% "circe-core"                 % circeV,
       "io.circe"                    %% "circe-generic"              % circeV,
       "io.circe"                    %% "circe-parser"               % circeV,
