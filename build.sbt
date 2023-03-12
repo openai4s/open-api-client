@@ -1,3 +1,4 @@
+
 val CatsVersion             = "2.6.1"
 val ScalaCheckVersion       = "1.15.4"
 val BetterMonadicForVersion = "0.3.1"
@@ -9,17 +10,15 @@ val logbackClassicV = "1.2.3"
 val AkkaActor = "2.6.20"
 val AkkaHttp = "10.2.10"
 
-lazy val root = (project in file("."))
+lazy val client = project
+  .in(file("client"))
   .settings(
     scalaVersion := "2.12.14",
     crossScalaVersions := Seq("2.12.14", "2.13.6", "3.0.2"),
     Global / onChangedBuildSource := ReloadOnSourceChanges,
     scalacOptions += "-Wconf:any:s",
     Compile / guardrailTasks := List(
-      ScalaClient(file("src/main/resources/completions.yaml"), pkg="io.github.openapi4s.completions",  framework="http4s",tracing = false,
-        encodeOptionalAs = codingOptional,
-        decodeOptionalAs = codingRequiredNullable,
-     )
+      ScalaClient(file("src/main/resources/completions.yaml"), pkg="io.github.openai4s.completions",  framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.client.completions.Codecs._")),
     ),
     // Adding dependencies in order to force Scala Steward to help us
     // update the g8 template as well
@@ -43,5 +42,8 @@ lazy val root = (project in file("."))
       "org.scalacheck"    %% "scalacheck"       % ScalaCheckVersion    % Test,
     )
   )
+
+
+lazy val root = (project in file(".")).aggregate(client)
 
 

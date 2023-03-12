@@ -1,0 +1,1140 @@
+openapi: 3.0.0
+info:
+  title: OpenAI API
+  description: APIs for sampling from and fine-tuning language models
+  version: '1.2.0'
+servers:
+  - url: https://api.openai.com/v1
+tags:
+  - name: OpenAI
+    description: The OpenAI REST API
+paths:
+
+  /engines:
+    get:
+      operationId: listEngines
+      deprecated: true
+      tags:
+        - OpenAI
+      summary: Lists the currently available (non-finetuned) models, and provides basic information about each one such as the owner and availability.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListEnginesResponse'
+      x-oaiMeta:
+        name: List engines
+        group: engines
+        path: list
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/engines \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+        response: |
+          {
+            "data": [
+              {
+                "id": "engine-id-0",
+                "object": "engine",
+                "owner": "organization-owner",
+                "ready": true
+              },
+              {
+                "id": "engine-id-2",
+                "object": "engine",
+                "owner": "organization-owner",
+                "ready": true
+              },
+              {
+                "id": "engine-id-3",
+                "object": "engine",
+                "owner": "openai",
+                "ready": false
+              },
+            ],
+            "object": "list"
+          }
+
+  /engines/{engine_id}:
+    get:
+      operationId: retrieveEngine
+      deprecated: true
+      tags:
+        - OpenAI
+      summary: Retrieves a model instance, providing basic information about it such as the owner and availability.
+      parameters:
+        - in: path
+          name: engine_id
+          required: true
+          schema:
+            type: string
+            # ideally this will be an actual ID, so this will always work from browser
+            example:
+              davinci
+          description: &engine_id_description >
+            The ID of the engine to use for this request
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Engine'
+      x-oaiMeta:
+        name: Retrieve engine
+        group: engines
+        path: retrieve
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/engines/VAR_model_id \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.Engine.retrieve("VAR_model_id")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.retrieveEngine("VAR_model_id");
+        response: |
+          {
+            "id": "VAR_model_id",
+            "object": "engine",
+            "owner": "openai",
+            "ready": true
+          }
+
+  /completions:
+    post:
+      operationId: createCompletion
+      tags:
+        - OpenAI
+      summary: Creates a completion for the provided prompt and parameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCompletionRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCompletionResponse'
+      x-oaiMeta:
+        name: Create completion
+        group: completions
+        path: create
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/completions \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -d '{
+              "model": "VAR_model_id",
+              "prompt": "Say this is a test",
+              "max_tokens": 7,
+              "temperature": 0
+            }'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.Completion.create(
+              model="VAR_model_id",
+              prompt="Say this is a test",
+              max_tokens=7,
+              temperature=0
+            )
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.createCompletion({
+              model: "VAR_model_id",
+              prompt: "Say this is a test",
+              max_tokens: 7,
+              temperature: 0,
+            });
+        parameters: |
+          {
+            "model": "VAR_model_id",
+            "prompt": "Say this is a test",
+            "max_tokens": 7,
+            "temperature": 0,
+            "top_p": 1,
+            "n": 1,
+            "stream": false,
+            "logprobs": null,
+          }
+        response: |
+          {
+            "id": "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7",
+            "object": "text_completion",
+            "created": 1589478378,
+            "model": "VAR_model_id",
+            "choices": [
+              {
+                "text": "\n\nThis is indeed a test",
+                "index": 0,
+                "logprobs": null,
+                "finish_reason": "length"
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 5,
+              "completion_tokens": 7,
+              "total_tokens": 12
+            }
+          }
+  /chat/completions:
+    post:
+      operationId: createChatCompletion
+      tags:
+        - OpenAI
+      summary: Creates a completion for the chat message
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChatCompletionRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateChatCompletionResponse'
+
+      x-oaiMeta:
+        name: Create chat completion
+        group: chat
+        path: create
+        beta: true
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/chat/completions \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -d '{
+              "model": "gpt-3.5-turbo",
+              "messages": [{"role": "user", "content": "Hello!"}]
+            }'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+
+            completion = openai.ChatCompletion.create(
+              model="gpt-3.5-turbo",
+              messages=[
+                {"role": "user", "content": "Hello!"}
+              ]
+            )
+
+            print(completion.choices[0].message)
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+
+            const completion = await openai.createChatCompletion({
+              model: "gpt-3.5-turbo",
+              messages: [{role: "user", content: "Hello world"}],
+            });
+            console.log(completion.data.choices[0].message);
+        parameters: |
+          {
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }
+        response: |
+          {
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "choices": [{
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "\n\nHello there, how may I assist you today?",
+              },
+              "finish_reason": "stop"
+            }],
+            "usage": {
+              "prompt_tokens": 9,
+              "completion_tokens": 12,
+              "total_tokens": 21
+            }
+          }
+
+  /models:
+    get:
+      operationId: listModels
+      tags:
+        - OpenAI
+      summary: Lists the currently available models, and provides basic information about each one such as the owner and availability.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListModelsResponse'
+      x-oaiMeta:
+        name: List models
+        group: models
+        path: list
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/models \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.Model.list()
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.listModels();
+        response: |
+          {
+            "data": [
+              {
+                "id": "model-id-0",
+                "object": "model",
+                "owned_by": "organization-owner",
+                "permission": [...]
+              },
+              {
+                "id": "model-id-1",
+                "object": "model",
+                "owned_by": "organization-owner",
+                "permission": [...]
+              },
+              {
+                "id": "model-id-2",
+                "object": "model",
+                "owned_by": "openai",
+                "permission": [...]
+              },
+            ],
+            "object": "list"
+          }
+
+  /models/{model}:
+    get:
+      operationId: retrieveModel
+      tags:
+        - OpenAI
+      summary: Retrieves a model instance, providing basic information about the model such as the owner and permissioning.
+      parameters:
+        - in: path
+          name: model
+          required: true
+          schema:
+            type: string
+            # ideally this will be an actual ID, so this will always work from browser
+            example:
+              text-davinci-001
+          description:
+            The ID of the model to use for this request
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Model'
+      x-oaiMeta:
+        name: Retrieve model
+        group: models
+        path: retrieve
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/models/VAR_model_id \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.Model.retrieve("VAR_model_id")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.retrieveModel("VAR_model_id");
+        response: |
+          {
+            "id": "VAR_model_id",
+            "object": "model",
+            "owned_by": "openai",
+            "permission": [...]
+          }
+    delete:
+      operationId: deleteModel
+      tags:
+        - OpenAI
+      summary: Delete a fine-tuned model. You must have the Owner role in your organization.
+      parameters:
+        - in: path
+          name: model
+          required: true
+          schema:
+            type: string
+            example: curie:ft-acmeco-2021-03-03-21-44-20
+          description: The model to delete
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteModelResponse'
+      x-oaiMeta:
+        name: Delete fine-tune model
+        group: fine-tunes
+        path: delete-model
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/models/curie:ft-acmeco-2021-03-03-21-44-20 \
+              -X DELETE \
+              -H "Authorization: Bearer YOUR_API_KEY"
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.Model.delete("curie:ft-acmeco-2021-03-03-21-44-20")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.deleteModel('curie:ft-acmeco-2021-03-03-21-44-20');
+        response: |
+          {
+            "id": "curie:ft-acmeco-2021-03-03-21-44-20",
+            "object": "model",
+            "deleted": true
+          }
+
+components:
+  schemas:
+    ListEnginesResponse:
+      type: object
+      properties:
+        object:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Engine'
+      required:
+        - object
+        - data
+
+    ListModelsResponse:
+      type: object
+      properties:
+        object:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/Model'
+      required:
+        - object
+        - data
+
+    DeleteModelResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        deleted:
+          type: boolean
+      required:
+        - id
+        - object
+        - deleted
+
+    CreateCompletionRequest:
+      type: object
+      properties:
+        model: &model_configuration
+          description: ID of the model to use. You can use the [List models](/docs/api-reference/models/list) API to see all of your available models, or see our [Model overview](/docs/models/overview) for descriptions of them.
+          type: string
+#       prompt:
+#         description: &completions_prompt_description |
+#           The prompt(s) to generate completions for, encoded as a string, array of strings, array of tokens, or array of token arrays.
+
+#           Note that <|endoftext|> is the document separator that the model sees during training, so if a prompt is not specified the model will generate as if from the beginning of a new document.
+#         default: null
+#         nullable: true
+#         oneOf:
+#           - type: string
+#             default: ''
+#             example: "This is a test."
+#           - type: array
+#             items:
+#               type: string
+#               default: ''
+#               example: "This is a test."
+#           - type: array
+#             minItems: 1
+#             items:
+#               type: integer
+#             example: "[1212, 318, 257, 1332, 13]"
+#           - type: array
+#             minItems: 1
+#             items:
+#               type: array
+#               minItems: 1
+#               items:
+#                 type: integer
+#             example: "[[1212, 318, 257, 1332, 13]]"
+        suffix:
+          description:
+            The suffix that comes after a completion of inserted text.
+          default: null
+          nullable: true
+          type: string
+          example: "test."
+        max_tokens:
+          type: integer
+          minimum: 0
+          default: 16
+          example: 16
+          nullable: true
+          description: &completions_max_tokens_description |
+            The maximum number of [tokens](/tokenizer) to generate in the completion.
+
+            The token count of your prompt plus `max_tokens` cannot exceed the model's context length. Most models have a context length of 2048 tokens (except for the newest models, which support 4096).
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 1
+          example: 1
+          nullable: true
+          description: &completions_temperature_description |
+            What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+
+            We generally recommend altering this or `top_p` but not both.
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 1
+          example: 1
+          nullable: true
+          description: &completions_top_p_description |
+            An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+
+            We generally recommend altering this or `temperature` but not both.
+        n:
+          type: integer
+          minimum: 1
+          maximum: 128
+          default: 1
+          example: 1
+          nullable: true
+          description: &completions_completions_description |
+            How many completions to generate for each prompt.
+
+            **Note:** Because this parameter generates many completions, it can quickly consume your token quota. Use carefully and ensure that you have reasonable settings for `max_tokens` and `stop`.
+        stream:
+          description: >
+            Whether to stream back partial progress. If set, tokens will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format)
+            as they become available, with the stream terminated by a `data: [DONE]` message.
+          type: boolean
+          required: false
+          default: false
+        logprobs: &completions_logprobs_configuration
+          type: integer
+          minimum: 0
+          maximum: 5
+          default: null
+          nullable: true
+          description: &completions_logprobs_description |
+            Include the log probabilities on the `logprobs` most likely tokens, as well the chosen tokens. For example, if `logprobs` is 5, the API will return a list of the 5 most likely tokens. The API will always return the `logprob` of the sampled token, so there may be up to `logprobs+1` elements in the response.
+
+            The maximum value for `logprobs` is 5. If you need more than this, please contact us through our [Help center](https://help.openai.com) and describe your use case.
+        echo:
+          type: boolean
+          default: false
+          required: false
+          description: &completions_echo_description >
+            Echo back the prompt in addition to the completion
+#        stop:
+#          description: &completions_stop_description >
+#            Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence.
+#          default: null
+#          nullable: true
+#          oneOf:
+#            - type: string
+#              default: "<|endoftext|>"
+#              example: "\n"
+#              nullable: true
+#            - type: array
+#              minItems: 1
+#              maxItems: 4
+#              items:
+#                type: string
+#                example: '["\n"]'
+        presence_penalty:
+          type: number
+          default: 0
+          minimum: -2
+          maximum: 2
+          nullable: true
+          description: &completions_presence_penalty_description |
+            Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
+
+            [See more information about frequency and presence penalties.](/docs/api-reference/parameter-details)
+        frequency_penalty:
+          type: number
+          default: 0
+          minimum: -2
+          maximum: 2
+          nullable: true
+          description: &completions_frequency_penalty_description |
+            Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
+
+            [See more information about frequency and presence penalties.](/docs/api-reference/parameter-details)
+        best_of:
+          type: integer
+          default: 1
+          minimum: 0
+          maximum: 20
+          nullable: true
+          description: &completions_best_of_description |
+            Generates `best_of` completions server-side and returns the "best" (the one with the highest log probability per token). Results cannot be streamed.
+
+            When used with `n`, `best_of` controls the number of candidate completions and `n` specifies how many to return – `best_of` must be greater than `n`.
+
+            **Note:** Because this parameter generates many completions, it can quickly consume your token quota. Use carefully and ensure that you have reasonable settings for `max_tokens` and `stop`.
+        logit_bias: &completions_logit_bias
+          type: object
+          x-oaiTypeLabel: map
+          default: null
+          nullable: true
+          description: &completions_logit_bias_description |
+            Modify the likelihood of specified tokens appearing in the completion.
+
+            Accepts a json object that maps tokens (specified by their token ID in the GPT tokenizer) to an associated bias value from -100 to 100. You can use this [tokenizer tool](/tokenizer?view=bpe) (which works for both GPT-2 and GPT-3) to convert text to token IDs. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.
+
+            As an example, you can pass `{"50256": -100}` to prevent the <|endoftext|> token from being generated.
+        user: &end_user_param_configuration
+          type: string
+          example: user-1234
+          description: |
+            A unique identifier representing your end-user, which can help OpenAI to monitor and detect abuse. [Learn more](/docs/guides/safety-best-practices/end-user-ids).
+      required:
+        - model
+
+    CreateCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        created:
+          type: integer
+        model:
+          type: string
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              index:
+                type: integer
+              logprobs:
+                type: object
+                nullable: true
+                properties:
+                  tokens:
+                    type: array
+                    items:
+                      type: string
+                  token_logprobs:
+                    type: array
+                    items:
+                      type: number
+                  top_logprobs:
+                    type: array
+                    items:
+                      type: object
+                  text_offset:
+                    type: array
+                    items:
+                      type: integer
+              finish_reason:
+                type: string
+        usage:
+          type: object
+          properties:
+            prompt_tokens:
+              type: integer
+            completion_tokens:
+              type: integer
+            total_tokens:
+              type: integer
+          required:
+            - prompt_tokens
+            - completion_tokens
+            - total_tokens
+      required:
+        - id
+        - object
+        - created
+        - model
+        - choices
+
+    ChatCompletionRequestMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: ["system", "user", "assistant"]
+          description: The role of the author of this message.
+        content:
+          type: string
+          description: The contents of the message
+        name:
+          type: string
+          description: The name of the user in a multi-user chat
+      required:
+        - role
+        - content
+
+    ChatCompletionResponseMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: ["system", "user", "assistant"]
+          description: The role of the author of this message.
+        content:
+          type: string
+          description: The contents of the message
+      required:
+        - role
+        - content
+
+    CreateChatCompletionRequest:
+      type: object
+      properties:
+        model:
+          description: ID of the model to use. Currently, only `gpt-3.5-turbo` and `gpt-3.5-turbo-0301` are supported.
+          type: string
+        messages:
+          description: The messages to generate chat completions for, in the [chat format](/docs/guides/chat/introduction).
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ChatCompletionRequestMessage'
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 1
+          example: 1
+          nullable: true
+          description: *completions_temperature_description
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 1
+          example: 1
+          nullable: true
+          description: *completions_top_p_description
+        n:
+          type: integer
+          minimum: 1
+          maximum: 128
+          default: 1
+          example: 1
+          nullable: true
+          description: How many chat completion choices to generate for each input message.
+        stream:
+          description: >
+            If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format)
+            as they become available, with the stream terminated by a `data: [DONE]` message.
+          type: boolean
+          required: false
+          default: false
+#        stop:
+#          description: |
+#            Up to 4 sequences where the API will stop generating further tokens.
+#          required: false
+#          oneOf:
+#            - type: string
+#              nullable: true
+#            - type: array
+#              minItems: 1
+#              maxItems: 4
+#              items:
+#                type: string
+        max_tokens:
+          description: |
+            The maximum number of tokens allowed for the generated answer. By default, the number of tokens the model can return will be (4096 - prompt tokens).
+          default: inf
+          type: integer
+        presence_penalty:
+          type: number
+          default: 0
+          minimum: -2
+          maximum: 2
+          nullable: true
+          description: *completions_presence_penalty_description
+        frequency_penalty:
+          type: number
+          default: 0
+          minimum: -2
+          maximum: 2
+          nullable: true
+          description: *completions_frequency_penalty_description
+        logit_bias:
+          type: object
+          x-oaiTypeLabel: map
+          default: null
+          nullable: true
+          description: |
+            Modify the likelihood of specified tokens appearing in the completion.
+
+            Accepts a json object that maps tokens (specified by their token ID in the tokenizer) to an associated bias value from -100 to 100. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.
+        user: *end_user_param_configuration
+      required:
+        - model
+        - messages
+
+    CreateChatCompletionResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        created:
+          type: integer
+        model:
+          type: string
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              index:
+                type: integer
+              message:
+                $ref: '#/components/schemas/ChatCompletionResponseMessage'
+              finish_reason:
+                type: string
+        usage:
+          type: object
+          properties:
+            prompt_tokens:
+              type: integer
+            completion_tokens:
+              type: integer
+            total_tokens:
+              type: integer
+          required:
+            - prompt_tokens
+            - completion_tokens
+            - total_tokens
+      required:
+        - id
+        - object
+        - created
+        - model
+        - choices
+
+    CreateEditRequest:
+      type: object
+      properties:
+        model:
+          description: ID of the model to use. You can use the `text-davinci-edit-001` or `code-davinci-edit-001` model with this endpoint.
+          type: string
+        input:
+          description:
+            The input text to use as a starting point for the edit.
+          type: string
+          required: false
+          example: "What day of the wek is it?"
+        instruction:
+          description:
+            The instruction that tells the model how to edit the prompt.
+          type: string
+          example: "Fix the spelling mistakes."
+        n:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 1
+          example: 1
+          nullable: true
+          description:
+            How many edits to generate for the input and instruction.
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 1
+          example: 1
+          nullable: true
+          description: *completions_temperature_description
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 1
+          example: 1
+          nullable: true
+          description: *completions_top_p_description
+      required:
+        - model
+        - instruction
+
+    CreateEditResponse:
+      type: object
+      properties:
+        object:
+          type: string
+        created:
+          type: integer
+        choices:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              index:
+                type: integer
+              logprobs:
+                type: object
+                nullable: true
+                properties:
+                  tokens:
+                    type: array
+                    items:
+                      type: string
+                  token_logprobs:
+                    type: array
+                    items:
+                      type: number
+                  top_logprobs:
+                    type: array
+                    items:
+                      type: object
+                  text_offset:
+                    type: array
+                    items:
+                      type: integer
+              finish_reason:
+                type: string
+        usage:
+          type: object
+          properties:
+            prompt_tokens:
+              type: integer
+            completion_tokens:
+              type: integer
+            total_tokens:
+              type: integer
+          required:
+            - prompt_tokens
+            - completion_tokens
+            - total_tokens
+      required:
+        - object
+        - created
+        - choices
+        - usag
+
+
+    # Note: This does not currently support the non-default response format types.
+
+
+    # Note: This does not currently support the non-default response format types.
+    Engine:
+      type: object
+      title: Engine
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        created:
+          type: integer
+          nullable: true
+        ready:
+          type: boolean
+      required:
+        - id
+        - object
+        - created
+        - ready
+
+    Model:
+      type: object
+      title: Model
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        created:
+          type: integer
+        owned_by:
+          type: string
+      required:
+        - id
+        - object
+        - created
+        - owned_by
+
+    OpenAIFile:
+      type: object
+      title: OpenAIFile
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        bytes:
+          type: integer
+        created_at:
+          type: integer
+        filename:
+          type: string
+        purpose:
+          type: string
+        status:
+          type: string
+        status_details:
+          type: object
+          nullable: true
+      required:
+        - id
+        - object
+        - bytes
+        - created_at
+        - filename
+        - purpose
+
+x-oaiMeta:
+  groups:
+    - id: models
+      title: Models
+      description: |
+        List and describe the various models available in the API. You can refer to the [Models](/docs/models) documentation to understand what models are available and the differences between them.
+    - id: completions
+      title: Completions
+      description: |
+        Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+    - id: chat
+      title: Chat
+      description: |
+        Given a chat conversation, the model will return a chat completion response.
+    - id: edits
+      title: Edits
+      description: |
+        Given a prompt and an instruction, the model will return an edited version of the prompt.
+    - id: images
+      title: Images
+      description: |
+        Given a prompt and/or an input image, the model will generate a new image.
+
+        Related guide: [Image generation](/docs/guides/images)
+    - id: embeddings
+      title: Embeddings
+      description: |
+        Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
+
+        Related guide: [Embeddings](/docs/guides/embeddings)
+    - id: audio
+      title: Audio
+      description: |
+        Learn how to turn audio into text.
+
+        Related guide: [Speech to text](/docs/guides/speech-to-text)
+    - id: files
+      title: Files
+      description: |
+        Files are used to upload documents that can be used with features like [Fine-tuning](/docs/api-reference/fine-tunes).
+    - id: fine-tunes
+      title: Fine-tunes
+      description: |
+        Manage fine-tuning jobs to tailor a model to your specific training data.
+
+        Related guide: [Fine-tune models](/docs/guides/fine-tuning)
+    - id: moderations
+      title: Moderations
+      description: |
+        Given a input text, outputs if the model classifies it as violating OpenAI's content policy.
+
+        Related guide: [Moderations](/docs/guides/moderation)
+    - id: searches
+      title: Searches
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272952-search-transition-guide).
+      description: |
+        Given a query and a set of documents or labels, the model ranks each document based on its semantic similarity to the provided query.
+
+        Related guide: [Search](/docs/guides/search)
+    - id: classifications
+      title: Classifications
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272941-classifications-transition-guide).
+      description: |
+        Given a query and a set of labeled examples, the model will predict the most likely label for the query. Useful as a drop-in replacement for any ML classification or text-to-label task.
+
+        Related guide: [Classification](/docs/guides/classifications)
+    - id: answers
+      title: Answers
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6233728-answers-transition-guide).
+      description: |
+        Given a question, a set of documents, and some examples, the API generates an answer to the question based on the information in the set of documents. This is useful for question-answering applications on sources of truth, like company documentation or a knowledge base.
+
+        Related guide: [Question answering](/docs/guides/answers)
+    - id: engines
+      title: Engines
+      description: These endpoints describe and provide access to the various engines available in the API.
+      warning:
+        title: The Engines endpoints are deprecated.
+        message: Please use their replacement, [Models](/docs/api-reference/models), instead. [Learn more](https://help.openai.com/TODO).
