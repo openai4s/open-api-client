@@ -18,21 +18,17 @@ lazy val client = project
     Global / onChangedBuildSource := ReloadOnSourceChanges,
     scalacOptions += "-Wconf:any:s",
     Compile / guardrailTasks := List(
-      ScalaClient(file("client/src/main/resources/v1/completions.yaml"), pkg="io.github.openai4s.completions",  framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.client.completions.Codecs._")),
-      ScalaClient(file("client/src/main/resources/v1/chat.yaml"), pkg="io.github.openai4s.chat",  framework="http4s", tracing = false),
+      ScalaClient(file("client/src/main/resources/v1/completions.yaml"), pkg="io.github.openai4s.v1.completions", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
+      ScalaClient(file("client/src/main/resources/v1/chat.yaml"), pkg="io.github.openai4s.v1.chat", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
 
     ),
     // Adding dependencies in order to force Scala Steward to help us
     // update the g8 template as well
     libraryDependencies ++= Seq(
-
       "org.http4s"                  %% "http4s-dsl"                 % http4sV,
       "org.http4s"                  %% "http4s-ember-server"        % http4sV,
       "org.http4s"                  %% "http4s-ember-client"        % http4sV,
       "org.http4s"                  %% "http4s-circe"               % http4sV,
-      //"com.typesafe.akka" %% "akka-actor"    % AkkaActor,
-      //"com.typesafe.akka" %% "akka-http"     % AkkaHttp,
-      //"com.typesafe.akka" %% "akka-stream"   % AkkaActor,
       "io.circe"                    %% "circe-core"                 % circeV,
       "io.circe"                    %% "circe-generic"              % circeV,
       "io.circe"                    %% "circe-parser"               % circeV,
@@ -49,3 +45,7 @@ lazy val client = project
 lazy val root = (project in file(".")).aggregate(client)
 
 
+
+def filterByAge(people: Seq[Person], minAge: Int) = {
+  people.map(_.age > minAge)
+}
