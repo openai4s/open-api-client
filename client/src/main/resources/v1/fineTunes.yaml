@@ -1,0 +1,627 @@
+openapi: 3.0.0
+info:
+  title: OpenAI API
+  description: APIs for sampling from and fine-tuning language models
+  version: '1.2.0'
+servers:
+  - url: https://api.openai.com/v1
+tags:
+  - name: OpenAI
+    description: The OpenAI REST API
+paths:
+
+  /fine-tunes:
+    post:
+      operationId: createFineTune
+      tags:
+        - OpenAI
+      summary: |
+        Creates a job that fine-tunes a specified model from a given dataset.
+
+        Response includes details of the enqueued job including job status and the name of the fine-tuned models once complete.
+
+        [Learn more about Fine-tuning](/docs/guides/fine-tuning)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFineTuneRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTune'
+      x-oaiMeta:
+        name: Create fine-tune
+        group: fine-tunes
+        path: create
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/fine-tunes \
+              -X POST \
+              -H "Content-Type: application/json" \
+              -H "Authorization: Bearer YOUR_API_KEY" \
+              -d '{
+              "training_file": "file-XGinujblHPwGLSztz8cPS8XY"
+            }'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.FineTune.create(training_file="file-XGinujblHPwGLSztz8cPS8XY")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.createFineTune({
+              training_file: "file-XGinujblHPwGLSztz8cPS8XY",
+            });
+        response: |
+          {
+            "id": "ft-AF1WoRqd3aJAHsqc9NY7iL8F",
+            "object": "fine-tune",
+            "model": "curie",
+            "created_at": 1614807352,
+            "events": [
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807352,
+                "level": "info",
+                "message": "Job enqueued. Waiting for jobs ahead to complete. Queue number: 0."
+              }
+            ],
+            "fine_tuned_model": null,
+            "hyperparams": {
+              "batch_size": 4,
+              "learning_rate_multiplier": 0.1,
+              "n_epochs": 4,
+              "prompt_loss_weight": 0.1,
+            },
+            "organization_id": "org-...",
+            "result_files": [],
+            "status": "pending",
+            "validation_files": [],
+            "training_files": [
+              {
+                "id": "file-XGinujblHPwGLSztz8cPS8XY",
+                "object": "file",
+                "bytes": 1547276,
+                "created_at": 1610062281,
+                "filename": "my-data-train.jsonl",
+                "purpose": "fine-tune-train"
+              }
+            ],
+            "updated_at": 1614807352,
+          }
+    get:
+      operationId: listFineTunes
+      tags:
+        - OpenAI
+      summary: |
+        List your organization's fine-tuning jobs
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFineTunesResponse'
+      x-oaiMeta:
+        name: List fine-tunes
+        group: fine-tunes
+        path: list
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/fine-tunes \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.FineTune.list()
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.listFineTunes();
+        response: |
+          {
+            "object": "list",
+            "data": [
+              {
+                "id": "ft-AF1WoRqd3aJAHsqc9NY7iL8F",
+                "object": "fine-tune",
+                "model": "curie",
+                "created_at": 1614807352,
+                "fine_tuned_model": null,
+                "hyperparams": { ... },
+                "organization_id": "org-...",
+                "result_files": [],
+                "status": "pending",
+                "validation_files": [],
+                "training_files": [ { ... } ],
+                "updated_at": 1614807352,
+              },
+              { ... },
+              { ... }
+            ]
+          }
+
+  /fine-tunes/{fine_tune_id}:
+    get:
+      operationId: retrieveFineTune
+      tags:
+        - OpenAI
+      summary: |
+        Gets info about the fine-tune job.
+
+        [Learn more about Fine-tuning](/docs/guides/fine-tuning)
+      parameters:
+        - in: path
+          name: fine_tune_id
+          required: true
+          schema:
+            type: string
+            example:
+              ft-AF1WoRqd3aJAHsqc9NY7iL8F
+          description: |
+            The ID of the fine-tune job
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTune'
+      x-oaiMeta:
+        name: Retrieve fine-tune
+        group: fine-tunes
+        path: retrieve
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/fine-tunes/ft-AF1WoRqd3aJAHsqc9NY7iL8F \
+              -H "Authorization: Bearer YOUR_API_KEY"
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.FineTune.retrieve(id="ft-AF1WoRqd3aJAHsqc9NY7iL8F")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.retrieveFineTune("ft-AF1WoRqd3aJAHsqc9NY7iL8F");
+        response: |
+          {
+            "id": "ft-AF1WoRqd3aJAHsqc9NY7iL8F",
+            "object": "fine-tune",
+            "model": "curie",
+            "created_at": 1614807352,
+            "events": [
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807352,
+                "level": "info",
+                "message": "Job enqueued. Waiting for jobs ahead to complete. Queue number: 0."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807356,
+                "level": "info",
+                "message": "Job started."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807861,
+                "level": "info",
+                "message": "Uploaded snapshot: curie:ft-acmeco-2021-03-03-21-44-20."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807864,
+                "level": "info",
+                "message": "Uploaded result files: file-QQm6ZpqdNwAaVC3aSz5sWwLT."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807864,
+                "level": "info",
+                "message": "Job succeeded."
+              }
+            ],
+            "fine_tuned_model": "curie:ft-acmeco-2021-03-03-21-44-20",
+            "hyperparams": {
+              "batch_size": 4,
+              "learning_rate_multiplier": 0.1,
+              "n_epochs": 4,
+              "prompt_loss_weight": 0.1,
+            },
+            "organization_id": "org-...",
+            "result_files": [
+              {
+                "id": "file-QQm6ZpqdNwAaVC3aSz5sWwLT",
+                "object": "file",
+                "bytes": 81509,
+                "created_at": 1614807863,
+                "filename": "compiled_results.csv",
+                "purpose": "fine-tune-results"
+              }
+            ],
+            "status": "succeeded",
+            "validation_files": [],
+            "training_files": [
+              {
+                "id": "file-XGinujblHPwGLSztz8cPS8XY",
+                "object": "file",
+                "bytes": 1547276,
+                "created_at": 1610062281,
+                "filename": "my-data-train.jsonl",
+                "purpose": "fine-tune-train"
+              }
+            ],
+            "updated_at": 1614807865,
+          }
+
+  /fine-tunes/{fine_tune_id}/cancel:
+    post:
+      operationId: cancelFineTune
+      tags:
+        - OpenAI
+      summary: |
+        Immediately cancel a fine-tune job.
+      parameters:
+        - in: path
+          name: fine_tune_id
+          required: true
+          schema:
+            type: string
+            example:
+              ft-AF1WoRqd3aJAHsqc9NY7iL8F
+          description: |
+            The ID of the fine-tune job to cancel
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FineTune'
+      x-oaiMeta:
+        name: Cancel fine-tune
+        group: fine-tunes
+        path: cancel
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/fine-tunes/ft-AF1WoRqd3aJAHsqc9NY7iL8F/cancel \
+              -X POST \
+              -H "Authorization: Bearer YOUR_API_KEY"
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.FineTune.cancel(id="ft-AF1WoRqd3aJAHsqc9NY7iL8F")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.cancelFineTune("ft-AF1WoRqd3aJAHsqc9NY7iL8F");
+        response: |
+          {
+            "id": "ft-xhrpBbvVUzYGo8oUO1FY4nI7",
+            "object": "fine-tune",
+            "model": "curie",
+            "created_at": 1614807770,
+            "events": [ { ... } ],
+            "fine_tuned_model": null,
+            "hyperparams": { ... },
+            "organization_id": "org-...",
+            "result_files": [],
+            "status": "cancelled",
+            "validation_files": [],
+            "training_files": [
+              {
+                "id": "file-XGinujblHPwGLSztz8cPS8XY",
+                "object": "file",
+                "bytes": 1547276,
+                "created_at": 1610062281,
+                "filename": "my-data-train.jsonl",
+                "purpose": "fine-tune-train"
+              }
+            ],
+            "updated_at": 1614807789,
+          }
+
+  /fine-tunes/{fine_tune_id}/events:
+    get:
+      operationId: listFineTuneEvents
+      tags:
+        - OpenAI
+      summary: |
+        Get fine-grained status updates for a fine-tune job.
+      parameters:
+        - in: path
+          name: fine_tune_id
+          required: true
+          schema:
+            type: string
+            example:
+              ft-AF1WoRqd3aJAHsqc9NY7iL8F
+          description: |
+            The ID of the fine-tune job to get events for.
+        - in: query
+          name: stream
+          required: false
+          schema:
+            type: boolean
+            default: false
+          description: |
+            Whether to stream events for the fine-tune job. If set to true,
+            events will be sent as data-only
+            [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format)
+            as they become available. The stream will terminate with a
+            `data: [DONE]` message when the job is finished (succeeded, cancelled,
+            or failed).
+
+            If set to false, only events generated so far will be returned.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFineTuneEventsResponse'
+      x-oaiMeta:
+        name: List fine-tune events
+        group: fine-tunes
+        path: events
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/fine-tunes/ft-AF1WoRqd3aJAHsqc9NY7iL8F/events \
+              -H "Authorization: Bearer YOUR_API_KEY"
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.FineTune.list_events(id="ft-AF1WoRqd3aJAHsqc9NY7iL8F")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.listFineTuneEvents("ft-AF1WoRqd3aJAHsqc9NY7iL8F");
+        response: |
+          {
+            "object": "list",
+            "data": [
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807352,
+                "level": "info",
+                "message": "Job enqueued. Waiting for jobs ahead to complete. Queue number: 0."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807356,
+                "level": "info",
+                "message": "Job started."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807861,
+                "level": "info",
+                "message": "Uploaded snapshot: curie:ft-acmeco-2021-03-03-21-44-20."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807864,
+                "level": "info",
+                "message": "Uploaded result files: file-QQm6ZpqdNwAaVC3aSz5sWwLT."
+              },
+              {
+                "object": "fine-tune-event",
+                "created_at": 1614807864,
+                "level": "info",
+                "message": "Job succeeded."
+              }
+            ]
+          }
+
+
+components:
+  schemas:
+
+    FineTune:
+      title: FineTune
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        created_at:
+          type: integer
+        updated_at:
+          type: integer
+        model:
+          type: string
+        fine_tuned_model:
+          type: string
+          nullable: true
+        organization_id:
+          type: string
+        status:
+          type: string
+        hyperparams:
+          type: object
+        training_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIFile'
+        validation_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIFile'
+        result_files:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIFile'
+        events:
+          type: array
+          items:
+            $ref: '#/components/schemas/FineTuneEvent'
+      required:
+        - id
+        - object
+        - created_at
+        - updated_at
+        - model
+        - fine_tuned_model
+        - organization_id
+        - status
+        - hyperparams
+        - training_files
+        - validation_files
+        - result_files
+
+    FineTuneEvent:
+      title: FineTuneEvent
+      properties:
+        object:
+          type: string
+        created_at:
+          type: integer
+        level:
+          type: string
+        message:
+          type: string
+      required:
+        - object
+        - created_at
+        - level
+        - message
+
+
+    OpenAIFile:
+      title: OpenAIFile
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        bytes:
+          type: integer
+        created_at:
+          type: integer
+        filename:
+          type: string
+        purpose:
+          type: string
+        status:
+          type: string
+        status_details:
+          type: object
+          nullable: true
+      required:
+        - id
+        - object
+        - bytes
+        - created_at
+        - filename
+        - purpose
+
+x-oaiMeta:
+  groups:
+    - id: models
+      title: Models
+      description: |
+        List and describe the various models available in the API. You can refer to the [Models](/docs/models) documentation to understand what models are available and the differences between them.
+    - id: completions
+      title: Completions
+      description: |
+        Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+    - id: chat
+      title: Chat
+      description: |
+        Given a chat conversation, the model will return a chat completion response.
+    - id: edits
+      title: Edits
+      description: |
+        Given a prompt and an instruction, the model will return an edited version of the prompt.
+    - id: images
+      title: Images
+      description: |
+        Given a prompt and/or an input image, the model will generate a new image.
+
+        Related guide: [Image generation](/docs/guides/images)
+    - id: embeddings
+      title: Embeddings
+      description: |
+        Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
+
+        Related guide: [Embeddings](/docs/guides/embeddings)
+    - id: audio
+      title: Audio
+      description: |
+        Learn how to turn audio into text.
+
+        Related guide: [Speech to text](/docs/guides/speech-to-text)
+    - id: files
+      title: Files
+      description: |
+        Files are used to upload documents that can be used with features like [Fine-tuning](/docs/api-reference/fine-tunes).
+    - id: fine-tunes
+      title: Fine-tunes
+      description: |
+        Manage fine-tuning jobs to tailor a model to your specific training data.
+
+        Related guide: [Fine-tune models](/docs/guides/fine-tuning)
+    - id: moderations
+      title: Moderations
+      description: |
+        Given a input text, outputs if the model classifies it as violating OpenAI's content policy.
+
+        Related guide: [Moderations](/docs/guides/moderation)
+    - id: searches
+      title: Searches
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272952-search-transition-guide).
+      description: |
+        Given a query and a set of documents or labels, the model ranks each document based on its semantic similarity to the provided query.
+
+        Related guide: [Search](/docs/guides/search)
+    - id: classifications
+      title: Classifications
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272941-classifications-transition-guide).
+      description: |
+        Given a query and a set of labeled examples, the model will predict the most likely label for the query. Useful as a drop-in replacement for any ML classification or text-to-label task.
+
+        Related guide: [Classification](/docs/guides/classifications)
+    - id: answers
+      title: Answers
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6233728-answers-transition-guide).
+      description: |
+        Given a question, a set of documents, and some examples, the API generates an answer to the question based on the information in the set of documents. This is useful for question-answering applications on sources of truth, like company documentation or a knowledge base.
+
+        Related guide: [Question answering](/docs/guides/answers)
+    - id: engines
+      title: Engines
+      description: These endpoints describe and provide access to the various engines available in the API.
+      warning:
+        title: The Engines endpoints are deprecated.
+        message: Please use their replacement, [Models](/docs/api-reference/models), instead. [Learn more](https://help.openai.com/TODO).

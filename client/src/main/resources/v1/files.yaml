@@ -1,0 +1,429 @@
+openapi: 3.0.0
+info:
+  title: OpenAI API
+  description: APIs for sampling from and fine-tuning language models
+  version: '1.2.0'
+servers:
+  - url: https://api.openai.com/v1
+tags:
+  - name: OpenAI
+    description: The OpenAI REST API
+paths:
+  /files:
+    get:
+      operationId: listFiles
+      tags:
+        - OpenAI
+      summary: Returns a list of files that belong to the user's organization.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListFilesResponse'
+      x-oaiMeta:
+        name: List files
+        group: files
+        path: list
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/files \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.File.list()
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.listFiles();
+        response: |
+          {
+            "data": [
+              {
+                "id": "file-ccdDZrC3iZVNiQVeEA6Z66wf",
+                "object": "file",
+                "bytes": 175,
+                "created_at": 1613677385,
+                "filename": "train.jsonl",
+                "purpose": "search"
+              },
+              {
+                "id": "file-XjGxS3KTG0uNmNOK362iJua3",
+                "object": "file",
+                "bytes": 140,
+                "created_at": 1613779121,
+                "filename": "puppy.jsonl",
+                "purpose": "search"
+              }
+            ],
+            "object": "list"
+          }
+    post:
+      operationId: createFile
+      tags:
+        - OpenAI
+      summary: |
+        Upload a file that contains document(s) to be used across various endpoints/features. Currently, the size of all the files uploaded by one organization can be up to 1 GB. Please contact us if you need to increase the storage limit.
+
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreateFileRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIFile'
+      x-oaiMeta:
+        name: Upload file
+        group: files
+        path: upload
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/files \
+              -H "Authorization: Bearer YOUR_API_KEY" \
+              -F purpose="fine-tune" \
+              -F file='@mydata.jsonl'
+
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.File.create(
+              file=open("mydata.jsonl", "rb"),
+              purpose='fine-tune'
+            )
+          node.js: |
+            const fs = require("fs");
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.createFile(
+              fs.createReadStream("mydata.jsonl"),
+              "fine-tune"
+            );
+        response: |
+          {
+            "id": "file-XjGxS3KTG0uNmNOK362iJua3",
+            "object": "file",
+            "bytes": 140,
+            "created_at": 1613779121,
+            "filename": "mydata.jsonl",
+            "purpose": "fine-tune"
+          }
+
+  /files/{file_id}:
+    delete:
+      operationId: deleteFile
+      tags:
+        - OpenAI
+      summary: Delete a file.
+      parameters:
+        - in: path
+          name: file_id
+          required: true
+          schema:
+            type: string
+          description: The ID of the file to use for this request
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteFileResponse'
+      x-oaiMeta:
+        name: Delete file
+        group: files
+        path: delete
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/files/file-XjGxS3KTG0uNmNOK362iJua3 \
+              -X DELETE \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.File.delete("file-XjGxS3KTG0uNmNOK362iJua3")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.deleteFile("file-XjGxS3KTG0uNmNOK362iJua3");
+        response: |
+          {
+            "id": "file-XjGxS3KTG0uNmNOK362iJua3",
+            "object": "file",
+            "deleted": true
+          }
+    get:
+      operationId: retrieveFile
+      tags:
+        - OpenAI
+      summary: Returns information about a specific file.
+      parameters:
+        - in: path
+          name: file_id
+          required: true
+          schema:
+            type: string
+          description: The ID of the file to use for this request
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OpenAIFile'
+      x-oaiMeta:
+        name: Retrieve file
+        group: files
+        path: retrieve
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/files/file-XjGxS3KTG0uNmNOK362iJua3 \
+              -H 'Authorization: Bearer YOUR_API_KEY'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.File.retrieve("file-XjGxS3KTG0uNmNOK362iJua3")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.retrieveFile("file-XjGxS3KTG0uNmNOK362iJua3");
+        response: |
+          {
+            "id": "file-XjGxS3KTG0uNmNOK362iJua3",
+            "object": "file",
+            "bytes": 140,
+            "created_at": 1613779657,
+            "filename": "mydata.jsonl",
+            "purpose": "fine-tune"
+          }
+
+  /files/{file_id}/content:
+    get:
+      operationId: downloadFile
+      tags:
+        - OpenAI
+      summary: Returns the contents of the specified file
+      parameters:
+        - in: path
+          name: file_id
+          required: true
+          schema:
+            type: string
+          description: The ID of the file to use for this request
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+      x-oaiMeta:
+        name: Retrieve file content
+        group: files
+        path: retrieve-content
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/files/file-XjGxS3KTG0uNmNOK362iJua3/content \
+              -H 'Authorization: Bearer YOUR_API_KEY' > file.jsonl
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            content = openai.File.download("file-XjGxS3KTG0uNmNOK362iJua3")
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.downloadFile("file-XjGxS3KTG0uNmNOK362iJua3");
+
+components:
+  schemas:
+
+    ListFilesResponse:
+      type: object
+      properties:
+        object:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/OpenAIFile'
+      required:
+        - object
+        - data
+
+    CreateFileRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        file:
+          description: |
+            Name of the [JSON Lines](https://jsonlines.readthedocs.io/en/latest/) file to be uploaded.
+
+            If the `purpose` is set to "fine-tune", each line is a JSON record with "prompt" and "completion" fields representing your [training examples](/docs/guides/fine-tuning/prepare-training-data).
+          type: string
+          format: binary
+        purpose:
+          description: |
+            The intended purpose of the uploaded documents.
+
+            Use "fine-tune" for [Fine-tuning](/docs/api-reference/fine-tunes). This allows us to validate the format of the uploaded file.
+
+          type: string
+      required:
+        - file
+        - purpose
+
+    DeleteFileResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        deleted:
+          type: boolean
+      required:
+        - id
+        - object
+        - deleted
+
+    OpenAIFile:
+      title: OpenAIFile
+      properties:
+        id:
+          type: string
+        object:
+          type: string
+        bytes:
+          type: integer
+        created_at:
+          type: integer
+        filename:
+          type: string
+        purpose:
+          type: string
+        status:
+          type: string
+        status_details:
+          type: object
+          nullable: true
+      required:
+        - id
+        - object
+        - bytes
+        - created_at
+        - filename
+        - purpose
+
+
+x-oaiMeta:
+  groups:
+    - id: models
+      title: Models
+      description: |
+        List and describe the various models available in the API. You can refer to the [Models](/docs/models) documentation to understand what models are available and the differences between them.
+    - id: completions
+      title: Completions
+      description: |
+        Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+    - id: chat
+      title: Chat
+      description: |
+        Given a chat conversation, the model will return a chat completion response.
+    - id: edits
+      title: Edits
+      description: |
+        Given a prompt and an instruction, the model will return an edited version of the prompt.
+    - id: images
+      title: Images
+      description: |
+        Given a prompt and/or an input image, the model will generate a new image.
+
+        Related guide: [Image generation](/docs/guides/images)
+    - id: embeddings
+      title: Embeddings
+      description: |
+        Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
+
+        Related guide: [Embeddings](/docs/guides/embeddings)
+    - id: audio
+      title: Audio
+      description: |
+        Learn how to turn audio into text.
+
+        Related guide: [Speech to text](/docs/guides/speech-to-text)
+    - id: files
+      title: Files
+      description: |
+        Files are used to upload documents that can be used with features like [Fine-tuning](/docs/api-reference/fine-tunes).
+    - id: fine-tunes
+      title: Fine-tunes
+      description: |
+        Manage fine-tuning jobs to tailor a model to your specific training data.
+
+        Related guide: [Fine-tune models](/docs/guides/fine-tuning)
+    - id: moderations
+      title: Moderations
+      description: |
+        Given a input text, outputs if the model classifies it as violating OpenAI's content policy.
+
+        Related guide: [Moderations](/docs/guides/moderation)
+    - id: searches
+      title: Searches
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272952-search-transition-guide).
+      description: |
+        Given a query and a set of documents or labels, the model ranks each document based on its semantic similarity to the provided query.
+
+        Related guide: [Search](/docs/guides/search)
+    - id: classifications
+      title: Classifications
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272941-classifications-transition-guide).
+      description: |
+        Given a query and a set of labeled examples, the model will predict the most likely label for the query. Useful as a drop-in replacement for any ML classification or text-to-label task.
+
+        Related guide: [Classification](/docs/guides/classifications)
+    - id: answers
+      title: Answers
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6233728-answers-transition-guide).
+      description: |
+        Given a question, a set of documents, and some examples, the API generates an answer to the question based on the information in the set of documents. This is useful for question-answering applications on sources of truth, like company documentation or a knowledge base.
+
+        Related guide: [Question answering](/docs/guides/answers)
+    - id: engines
+      title: Engines
+      description: These endpoints describe and provide access to the various engines available in the API.
+      warning:
+        title: The Engines endpoints are deprecated.
+        message: Please use their replacement, [Models](/docs/api-reference/models), instead. [Learn more](https://help.openai.com/TODO).

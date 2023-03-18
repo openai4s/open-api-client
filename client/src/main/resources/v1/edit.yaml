@@ -1,0 +1,228 @@
+openapi: 3.0.0
+info:
+  title: OpenAI API
+  description: APIs for sampling from and fine-tuning language models
+  version: '1.2.0'
+servers:
+  - url: https://api.openai.com/v1
+tags:
+  - name: OpenAI
+    description: The OpenAI REST API
+paths:
+
+  /edits:
+    post:
+      operationId: createEdit
+      tags:
+        - OpenAI
+      summary: Creates a new edit for the provided input, instruction, and parameters.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateEditRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateEditResponse'
+      x-oaiMeta:
+        name: Create edit
+        group: edits
+        path: create
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/edits \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -d '{
+              "model": "VAR_model_id",
+              "input": "What day of the wek is it?",
+              "instruction": "Fix the spelling mistakes"
+            }'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.Edit.create(
+              model="VAR_model_id",
+              input="What day of the wek is it?",
+              instruction="Fix the spelling mistakes"
+            )
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.createEdit({
+              model: "VAR_model_id",
+              input: "What day of the wek is it?",
+              instruction: "Fix the spelling mistakes",
+            });
+        parameters: |
+          {
+            "model": "VAR_model_id",
+            "input": "What day of the wek is it?",
+            "instruction": "Fix the spelling mistakes",
+          }
+        response: |
+          {
+            "object": "edit",
+            "created": 1589478378,
+            "choices": [
+              {
+                "text": "What day of the week is it?",
+                "index": 0,
+              }
+            ],
+            "usage": {
+              "prompt_tokens": 25,
+              "completion_tokens": 32,
+              "total_tokens": 57
+            }
+          }
+
+
+components:
+  schemas:
+
+    CreateEditRequest:
+      type: object
+      properties:
+        model:
+          description: ID of the model to use. You can use the `text-davinci-edit-001` or `code-davinci-edit-001` model with this endpoint.
+          type: string
+        input:
+          description:
+            The input text to use as a starting point for the edit.
+          type: string
+          default: ''
+          nullable: true
+          example: "What day of the wek is it?"
+        instruction:
+          description:
+            The instruction that tells the model how to edit the prompt.
+          type: string
+          example: "Fix the spelling mistakes."
+        n:
+          type: integer
+          minimum: 1
+          maximum: 20
+          default: 1
+          example: 1
+          nullable: true
+          description:
+            How many edits to generate for the input and instruction.
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 1
+          example: 1
+          nullable: true
+          description: &completions_temperature_description |
+                                      What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
+                                      We generally recommend altering this or `top_p` but not both.
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 1
+          example: 1
+          nullable: true
+          description: &completions_top_p_description |
+            An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
+            We generally recommend altering this or `temperature` but not both.
+      required:
+        - model
+        - instruction
+
+x-oaiMeta:
+  groups:
+    - id: models
+      title: Models
+      description: |
+        List and describe the various models available in the API. You can refer to the [Models](/docs/models) documentation to understand what models are available and the differences between them.
+    - id: completions
+      title: Completions
+      description: |
+        Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+    - id: chat
+      title: Chat
+      description: |
+        Given a chat conversation, the model will return a chat completion response.
+    - id: edits
+      title: Edits
+      description: |
+        Given a prompt and an instruction, the model will return an edited version of the prompt.
+    - id: images
+      title: Images
+      description: |
+        Given a prompt and/or an input image, the model will generate a new image.
+
+        Related guide: [Image generation](/docs/guides/images)
+    - id: embeddings
+      title: Embeddings
+      description: |
+        Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
+
+        Related guide: [Embeddings](/docs/guides/embeddings)
+    - id: audio
+      title: Audio
+      description: |
+        Learn how to turn audio into text.
+
+        Related guide: [Speech to text](/docs/guides/speech-to-text)
+    - id: files
+      title: Files
+      description: |
+        Files are used to upload documents that can be used with features like [Fine-tuning](/docs/api-reference/fine-tunes).
+    - id: fine-tunes
+      title: Fine-tunes
+      description: |
+        Manage fine-tuning jobs to tailor a model to your specific training data.
+
+        Related guide: [Fine-tune models](/docs/guides/fine-tuning)
+    - id: moderations
+      title: Moderations
+      description: |
+        Given a input text, outputs if the model classifies it as violating OpenAI's content policy.
+
+        Related guide: [Moderations](/docs/guides/moderation)
+    - id: searches
+      title: Searches
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272952-search-transition-guide).
+      description: |
+        Given a query and a set of documents or labels, the model ranks each document based on its semantic similarity to the provided query.
+
+        Related guide: [Search](/docs/guides/search)
+    - id: classifications
+      title: Classifications
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272941-classifications-transition-guide).
+      description: |
+        Given a query and a set of labeled examples, the model will predict the most likely label for the query. Useful as a drop-in replacement for any ML classification or text-to-label task.
+
+        Related guide: [Classification](/docs/guides/classifications)
+    - id: answers
+      title: Answers
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6233728-answers-transition-guide).
+      description: |
+        Given a question, a set of documents, and some examples, the API generates an answer to the question based on the information in the set of documents. This is useful for question-answering applications on sources of truth, like company documentation or a knowledge base.
+
+        Related guide: [Question answering](/docs/guides/answers)
+    - id: engines
+      title: Engines
+      description: These endpoints describe and provide access to the various engines available in the API.
+      warning:
+        title: The Engines endpoints are deprecated.
+        message: Please use their replacement, [Models](/docs/api-reference/models), instead. [Learn more](https://help.openai.com/TODO).

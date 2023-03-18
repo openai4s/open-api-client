@@ -1,0 +1,281 @@
+openapi: 3.0.0
+info:
+  title: OpenAI API
+  description: APIs for sampling from and fine-tuning language models
+  version: '1.2.0'
+servers:
+  - url: https://api.openai.com/v1
+tags:
+  - name: OpenAI
+    description: The OpenAI REST API
+paths:
+
+  /moderations:
+    post:
+      operationId: createModeration
+      tags:
+        - OpenAI
+      summary: Classifies if text violates OpenAI's Content Policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateModerationRequest'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateModerationResponse'
+      x-oaiMeta:
+        name: Create moderation
+        group: moderations
+        path: create
+        examples:
+          curl: |
+            curl https://api.openai.com/v1/moderations \
+              -H 'Content-Type: application/json' \
+              -H 'Authorization: Bearer YOUR_API_KEY' \
+              -d '{
+              "input": "I want to kill them."
+            }'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
+            openai.Moderation.create(
+              input="I want to kill them.",
+            )
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+            const response = await openai.createModeration({
+              input: "I want to kill them.",
+            });
+        parameters: |
+          {
+            "input": "I want to kill them."
+          }
+        response: |
+          {
+            "id": "modr-5MWoLO",
+            "model": "text-moderation-001",
+            "results": [
+              {
+                "categories": {
+                  "hate": false,
+                  "hate/threatening": true,
+                  "self-harm": false,
+                  "sexual": false,
+                  "sexual/minors": false,
+                  "violence": true,
+                  "violence/graphic": false
+                },
+                "category_scores": {
+                  "hate": 0.22714105248451233,
+                  "hate/threatening": 0.4132447838783264,
+                  "self-harm": 0.005232391878962517,
+                  "sexual": 0.01407341007143259,
+                  "sexual/minors": 0.0038522258400917053,
+                  "violence": 0.9223177433013916,
+                  "violence/graphic": 0.036865197122097015
+                },
+                "flagged": true
+              }
+            ]
+          }
+
+
+components:
+  schemas:
+
+
+    CreateModerationRequest:
+      type: object
+      properties:
+        input:
+          description: The input text to classify
+          oneOf:
+            - type: string
+              default: ''
+              example: "I want to kill them."
+            - type: array
+              items:
+                type: string
+                default: ''
+                example: "I want to kill them."
+        model:
+          description: |
+            Two content moderations models are available: `text-moderation-stable` and `text-moderation-latest`.
+
+            The default is `text-moderation-latest` which will be automatically upgraded over time. This ensures you are always using our most accurate model. If you use `text-moderation-stable`, we will provide advanced notice before updating the model. Accuracy of `text-moderation-stable` may be slightly lower than for `text-moderation-latest`.
+          type: string
+          nullable: false
+          default: "text-moderation-latest"
+          example: "text-moderation-stable"
+      required:
+        - input
+
+    CreateModerationResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        model:
+          type: string
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              flagged:
+                type: boolean
+              categories:
+                type: object
+                properties:
+                  hate:
+                    type: boolean
+                  hate/threatening:
+                    type: boolean
+                  self-harm:
+                    type: boolean
+                  sexual:
+                    type: boolean
+                  sexual/minors:
+                    type: boolean
+                  violence:
+                    type: boolean
+                  violence/graphic:
+                    type: boolean
+                required:
+                  - hate
+                  - hate/threatening
+                  - self-harm
+                  - sexual
+                  - sexual/minors
+                  - violence
+                  - violence/graphic
+              category_scores:
+                type: object
+                properties:
+                  hate:
+                    type: number
+                  hate/threatening:
+                    type: number
+                  self-harm:
+                    type: number
+                  sexual:
+                    type: number
+                  sexual/minors:
+                    type: number
+                  violence:
+                    type: number
+                  violence/graphic:
+                    type: number
+                required:
+                  - hate
+                  - hate/threatening
+                  - self-harm
+                  - sexual
+                  - sexual/minors
+                  - violence
+                  - violence/graphic
+            required:
+              - flagged
+              - categories
+              - category_scores
+      required:
+        - id
+        - model
+        - results
+
+x-oaiMeta:
+  groups:
+    - id: models
+      title: Models
+      description: |
+        List and describe the various models available in the API. You can refer to the [Models](/docs/models) documentation to understand what models are available and the differences between them.
+    - id: completions
+      title: Completions
+      description: |
+        Given a prompt, the model will return one or more predicted completions, and can also return the probabilities of alternative tokens at each position.
+    - id: chat
+      title: Chat
+      description: |
+        Given a chat conversation, the model will return a chat completion response.
+    - id: edits
+      title: Edits
+      description: |
+        Given a prompt and an instruction, the model will return an edited version of the prompt.
+    - id: images
+      title: Images
+      description: |
+        Given a prompt and/or an input image, the model will generate a new image.
+
+        Related guide: [Image generation](/docs/guides/images)
+    - id: embeddings
+      title: Embeddings
+      description: |
+        Get a vector representation of a given input that can be easily consumed by machine learning models and algorithms.
+
+        Related guide: [Embeddings](/docs/guides/embeddings)
+    - id: audio
+      title: Audio
+      description: |
+        Learn how to turn audio into text.
+
+        Related guide: [Speech to text](/docs/guides/speech-to-text)
+    - id: files
+      title: Files
+      description: |
+        Files are used to upload documents that can be used with features like [Fine-tuning](/docs/api-reference/fine-tunes).
+    - id: fine-tunes
+      title: Fine-tunes
+      description: |
+        Manage fine-tuning jobs to tailor a model to your specific training data.
+
+        Related guide: [Fine-tune models](/docs/guides/fine-tuning)
+    - id: moderations
+      title: Moderations
+      description: |
+        Given a input text, outputs if the model classifies it as violating OpenAI's content policy.
+
+        Related guide: [Moderations](/docs/guides/moderation)
+    - id: searches
+      title: Searches
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272952-search-transition-guide).
+      description: |
+        Given a query and a set of documents or labels, the model ranks each document based on its semantic similarity to the provided query.
+
+        Related guide: [Search](/docs/guides/search)
+    - id: classifications
+      title: Classifications
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6272941-classifications-transition-guide).
+      description: |
+        Given a query and a set of labeled examples, the model will predict the most likely label for the query. Useful as a drop-in replacement for any ML classification or text-to-label task.
+
+        Related guide: [Classification](/docs/guides/classifications)
+    - id: answers
+      title: Answers
+      warning:
+        title: This endpoint is deprecated and will be removed on December 3rd, 2022
+        message: We’ve developed new methods with better performance. [Learn more](https://help.openai.com/en/articles/6233728-answers-transition-guide).
+      description: |
+        Given a question, a set of documents, and some examples, the API generates an answer to the question based on the information in the set of documents. This is useful for question-answering applications on sources of truth, like company documentation or a knowledge base.
+
+        Related guide: [Question answering](/docs/guides/answers)
+    - id: engines
+      title: Engines
+      description: These endpoints describe and provide access to the various engines available in the API.
+      warning:
+        title: The Engines endpoints are deprecated.
+        message: Please use their replacement, [Models](/docs/api-reference/models), instead. [Learn more](https://help.openai.com/TODO).

@@ -4,120 +4,141 @@ info:
   description: APIs for sampling from and fine-tuning language models
   version: '1.2.0'
 servers:
-  - url: https://api.openai.com/v1/completions
+  - url: https://api.openai.com/v1
 tags:
   - name: OpenAI
     description: The OpenAI REST API
 paths:
-  /completions:
+
+  /chat/completions:
     post:
-      operationId: createCompletion
+      operationId: createChatCompletion
       tags:
         - OpenAI
-      summary: Creates a completion for the provided prompt and parameters
+      summary: Creates a completion for the chat message
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateCompletionRequest'
+              $ref: '#/components/schemas/CreateChatCompletionRequest'
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CreateCompletionResponse'
+                $ref: '#/components/schemas/CreateChatCompletionResponse'
+
       x-oaiMeta:
-        name: Create completion
-        group: completions
+        name: Create chat completion
+        group: chat
         path: create
+        beta: true
         examples:
           curl: |
-            curl https://api.openai.com/v1/completions \
+            curl https://api.openai.com/v1/chat/completions \
               -H 'Content-Type: application/json' \
               -H 'Authorization: Bearer YOUR_API_KEY' \
               -d '{
-              "model": "VAR_model_id",
-              "prompt": "Say this is a test",
-              "max_tokens": 7,
-              "temperature": 0
+              "model": "gpt-3.5-turbo",
+              "messages": [{"role": "user", "content": "Hello!"}]
             }'
+          python: |
+            import os
+            import openai
+            openai.api_key = os.getenv("OPENAI_API_KEY")
 
+            completion = openai.ChatCompletion.create(
+              model="gpt-3.5-turbo",
+              messages=[
+                {"role": "user", "content": "Hello!"}
+              ]
+            )
+
+            print(completion.choices[0].message)
+          node.js: |
+            const { Configuration, OpenAIApi } = require("openai");
+
+            const configuration = new Configuration({
+              apiKey: process.env.OPENAI_API_KEY,
+            });
+            const openai = new OpenAIApi(configuration);
+
+            const completion = await openai.createChatCompletion({
+              model: "gpt-3.5-turbo",
+              messages: [{role: "user", content: "Hello world"}],
+            });
+            console.log(completion.data.choices[0].message);
         parameters: |
           {
-            "model": "VAR_model_id",
-            "prompt": "Say this is a test",
-            "max_tokens": 7,
-            "temperature": 0,
-            "top_p": 1,
-            "n": 1,
-            "stream": false,
-            "logprobs": null,
-            "stop": "\n"
+            "model": "gpt-3.5-turbo",
+            "messages": [{"role": "user", "content": "Hello!"}]
           }
         response: |
           {
-            "id": "cmpl-uqkvlQyYK7bGYrRHQ0eXlWi7",
-            "object": "text_completion",
-            "created": 1589478378,
-            "model": "VAR_model_id",
-            "choices": [
-              {
-                "text": "\n\nThis is indeed a test",
-                "index": 0,
-                "logprobs": null,
-                "finish_reason": "length"
-              }
-            ],
+            "id": "chatcmpl-123",
+            "object": "chat.completion",
+            "created": 1677652288,
+            "choices": [{
+              "index": 0,
+              "message": {
+                "role": "assistant",
+                "content": "\n\nHello there, how may I assist you today?",
+              },
+              "finish_reason": "stop"
+            }],
             "usage": {
-              "prompt_tokens": 5,
-              "completion_tokens": 7,
-              "total_tokens": 12
+              "prompt_tokens": 9,
+              "completion_tokens": 12,
+              "total_tokens": 21
             }
           }
 
+
 components:
   schemas:
+
     CreateCompletionRequest:
       type: object
       properties:
         model: &model_configuration
           description: ID of the model to use. You can use the [List models](/docs/api-reference/models/list) API to see all of your available models, or see our [Model overview](/docs/models/overview) for descriptions of them.
           type: string
-
         prompt:
-          description: |
+          description: &completions_prompt_description |
             The prompt(s) to generate completions for, encoded as a string, array of strings, array of tokens, or array of token arrays.
+
             Note that <|endoftext|> is the document separator that the model sees during training, so if a prompt is not specified the model will generate as if from the beginning of a new document.
-          x-scala-type: Either[String, Either[Vector[String], Either[Vector[String], Vector[Vector[Int]]]]]
-          type: string
-#         oneOf:
-#           - type: string
-#             default: ''
-#             example: "This is a test."
-#           - type: array
-#             items:
-#               type: string
-#               default: ''
-#               example: "This is a test."
-#           - type: array
-#             minItems: 1
-#             items:
-#               type: integer
-#             example: "[1212, 318, 257, 1332, 13]"
-#           - type: array
-#             minItems: 1
-#             items:
-#               type: array
-#               minItems: 1
-#               items:
-#                 type: integer
-#             example: "[[1212, 318, 257, 1332, 13]]"
+          default: '<|endoftext|>'
+          nullable: true
+          oneOf:
+            - type: string
+              default: ''
+              example: "This is a test."
+            - type: array
+              items:
+                type: string
+                default: ''
+                example: "This is a test."
+            - type: array
+              minItems: 1
+              items:
+                type: integer
+              example: "[1212, 318, 257, 1332, 13]"
+            - type: array
+              minItems: 1
+              items:
+                type: array
+                minItems: 1
+                items:
+                  type: integer
+              example: "[[1212, 318, 257, 1332, 13]]"
         suffix:
           description:
             The suffix that comes after a completion of inserted text.
-          required: false
+          default: null
+          nullable: true
           type: string
           example: "test."
         max_tokens:
@@ -125,7 +146,7 @@ components:
           minimum: 0
           default: 16
           example: 16
-          required: false
+          nullable: true
           description: &completions_max_tokens_description |
             The maximum number of [tokens](/tokenizer) to generate in the completion.
 
@@ -136,7 +157,7 @@ components:
           maximum: 2
           default: 1
           example: 1
-          required: false
+          nullable: true
           description: &completions_temperature_description |
             What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic.
 
@@ -147,7 +168,7 @@ components:
           maximum: 1
           default: 1
           example: 1
-          required: false
+          nullable: true
           description: &completions_top_p_description |
             An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of the tokens with top_p probability mass. So 0.1 means only the tokens comprising the top 10% probability mass are considered.
 
@@ -158,7 +179,7 @@ components:
           maximum: 128
           default: 1
           example: 1
-          required: false
+          nullable: true
           description: &completions_completions_description |
             How many completions to generate for each prompt.
 
@@ -168,14 +189,14 @@ components:
             Whether to stream back partial progress. If set, tokens will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format)
             as they become available, with the stream terminated by a `data: [DONE]` message.
           type: boolean
-          required: false
+          nullable: true
           default: false
         logprobs: &completions_logprobs_configuration
           type: integer
           minimum: 0
           maximum: 5
           default: null
-          required: false
+          nullable: true
           description: &completions_logprobs_description |
             Include the log probabilities on the `logprobs` most likely tokens, as well the chosen tokens. For example, if `logprobs` is 5, the API will return a list of the 5 most likely tokens. The API will always return the `logprob` of the sampled token, so there may be up to `logprobs+1` elements in the response.
 
@@ -183,32 +204,31 @@ components:
         echo:
           type: boolean
           default: false
-          required: false
+          nullable: true
           description: &completions_echo_description >
             Echo back the prompt in addition to the completion
         stop:
           description: &completions_stop_description >
             Up to 4 sequences where the API will stop generating further tokens. The returned text will not contain the stop sequence.
-          required: false
-          x-scala-type: Either[String, Vector[String]]
-          type: string
-#          oneOf:
-#            - type: string
-#              default: <|endoftext|>
-#              example: "\n"
-#              required: false
-#            - type: array
-#              minItems: 1
-#              maxItems: 4
-#              items:
-#                type: string
-#                example: '["\n"]'
+          default: null
+          nullable: true
+          oneOf:
+            - type: string
+              default: <|endoftext|>
+              example: "\n"
+              nullable: true
+            - type: array
+              minItems: 1
+              maxItems: 4
+              items:
+                type: string
+                example: '["\n"]'
         presence_penalty:
           type: number
           default: 0
           minimum: -2
           maximum: 2
-          required: false
+          nullable: true
           description: &completions_presence_penalty_description |
             Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
 
@@ -218,7 +238,7 @@ components:
           default: 0
           minimum: -2
           maximum: 2
-          required: false
+          nullable: true
           description: &completions_frequency_penalty_description |
             Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim.
 
@@ -228,7 +248,7 @@ components:
           default: 1
           minimum: 0
           maximum: 20
-          required: false
+          nullable: true
           description: &completions_best_of_description |
             Generates `best_of` completions server-side and returns the "best" (the one with the highest log probability per token). Results cannot be streamed.
 
@@ -239,7 +259,7 @@ components:
           type: object
           x-oaiTypeLabel: map
           default: null
-          required: false
+          nullable: true
           description: &completions_logit_bias_description |
             Modify the likelihood of specified tokens appearing in the completion.
 
@@ -254,7 +274,126 @@ components:
       required:
         - model
 
-    CreateCompletionResponse:
+    ChatCompletionRequestMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: ["system", "user", "assistant"]
+          description: The role of the author of this message.
+        content:
+          type: string
+          description: The contents of the message
+        name:
+          type: string
+          description: The name of the user in a multi-user chat
+      required:
+        - role
+        - content
+
+    ChatCompletionResponseMessage:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: ["system", "user", "assistant"]
+          description: The role of the author of this message.
+        content:
+          type: string
+          description: The contents of the message
+      required:
+        - role
+        - content
+
+    CreateChatCompletionRequest:
+      type: object
+      properties:
+        model:
+          description: ID of the model to use. Currently, only `gpt-3.5-turbo` and `gpt-3.5-turbo-0301` are supported.
+          type: string
+        messages:
+          description: The messages to generate chat completions for, in the [chat format](/docs/guides/chat/introduction).
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/ChatCompletionRequestMessage'
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+          default: 1
+          example: 1
+          nullable: true
+          description: *completions_temperature_description
+        top_p:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 1
+          example: 1
+          nullable: true
+          description: *completions_top_p_description
+        n:
+          type: integer
+          minimum: 1
+          maximum: 128
+          default: 1
+          example: 1
+          nullable: true
+          description: How many chat completion choices to generate for each input message.
+        stream:
+          description: >
+            If set, partial message deltas will be sent, like in ChatGPT. Tokens will be sent as data-only [server-sent events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events#Event_stream_format)
+            as they become available, with the stream terminated by a `data: [DONE]` message.
+          type: boolean
+          nullable: true
+          default: false
+        stop:
+          description: |
+            Up to 4 sequences where the API will stop generating further tokens.
+          default: null
+          oneOf:
+            - type: string
+              nullable: true
+            - type: array
+              minItems: 1
+              maxItems: 4
+              items:
+                type: string
+        max_tokens:
+          description: |
+            The maximum number of tokens allowed for the generated answer. By default, the number of tokens the model can return will be (4096 - prompt tokens).
+          default: inf
+          type: integer
+        presence_penalty:
+          type: number
+          default: 0
+          minimum: -2
+          maximum: 2
+          nullable: true
+          description: *completions_presence_penalty_description
+        frequency_penalty:
+          type: number
+          default: 0
+          minimum: -2
+          maximum: 2
+          nullable: true
+          description: *completions_frequency_penalty_description
+        logit_bias:
+          type: object
+          x-oaiTypeLabel: map
+          default: null
+          nullable: true
+          description: |
+            Modify the likelihood of specified tokens appearing in the completion.
+
+            Accepts a json object that maps tokens (specified by their token ID in the tokenizer) to an associated bias value from -100 to 100. Mathematically, the bias is added to the logits generated by the model prior to sampling. The exact effect will vary per model, but values between -1 and 1 should decrease or increase likelihood of selection; values like -100 or 100 should result in a ban or exclusive selection of the relevant token.
+        user: *end_user_param_configuration
+      required:
+        - model
+        - messages
+
+    CreateChatCompletionResponse:
       type: object
       properties:
         id:
@@ -270,30 +409,10 @@ components:
           items:
             type: object
             properties:
-              text:
-                type: string
               index:
                 type: integer
-              logprobs:
-                type: object
-                required: false
-                properties:
-                  tokens:
-                    type: array
-                    items:
-                      type: string
-                  token_logprobs:
-                    type: array
-                    items:
-                      type: number
-                  top_logprobs:
-                    type: array
-                    items:
-                      type: object
-                  text_offset:
-                    type: array
-                    items:
-                      type: integer
+              message:
+                $ref: '#/components/schemas/ChatCompletionResponseMessage'
               finish_reason:
                 type: string
         usage:

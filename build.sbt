@@ -18,7 +18,9 @@ lazy val client = project
     Global / onChangedBuildSource := ReloadOnSourceChanges,
     scalacOptions += "-Wconf:any:s",
     Compile / guardrailTasks := List(
-      ScalaClient(file("client/src/main/resources/completions.yaml"), pkg="io.github.openai4s.completions",  framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.client.completions.Codecs._")),
+      ScalaClient(file("client/src/main/resources/v1/completions.yaml"), pkg="io.github.openai4s.completions",  framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.client.completions.Codecs._")),
+      ScalaClient(file("client/src/main/resources/v1/chat.yaml"), pkg="io.github.openai4s.chat",  framework="http4s", tracing = false),
+
     ),
     // Adding dependencies in order to force Scala Steward to help us
     // update the g8 template as well
