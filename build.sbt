@@ -18,9 +18,9 @@ lazy val client = project
     Global / onChangedBuildSource := ReloadOnSourceChanges,
     scalacOptions += "-Wconf:any:s",
     Compile / guardrailTasks := List(
-      ScalaClient(file("client/src/main/resources/v1/completions.yaml"), pkg="io.github.openai4s.v1.completions", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
-      ScalaClient(file("client/src/main/resources/v1/chat.yaml"), pkg="io.github.openai4s.v1.chat", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
-
+      //ScalaClient(file("client/src/main/resources/v1/completions.yaml"), pkg="io.github.openai4s.v1.completions", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
+      ScalaClient(file("client/src/main/resources/v1/chat.yaml"), encodeOptionalAs = codingOptional,
+        decodeOptionalAs = codingRequiredNullable, pkg="io.github.openai4s.v1.chat", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
     ),
     // Adding dependencies in order to force Scala Steward to help us
     // update the g8 template as well
@@ -32,7 +32,6 @@ lazy val client = project
       "io.circe"                    %% "circe-core"                 % circeV,
       "io.circe"                    %% "circe-generic"              % circeV,
       "io.circe"                    %% "circe-parser"               % circeV,
-
       "ch.qos.logback"              % "logback-classic"             % logbackClassicV,
 
       "org.scalatest"     %% "scalatest"        % ScalaTestVersion     % Test,
@@ -43,9 +42,3 @@ lazy val client = project
 
 
 lazy val root = (project in file(".")).aggregate(client)
-
-
-
-def filterByAge(people: Seq[Person], minAge: Int) = {
-  people.map(_.age > minAge)
-}

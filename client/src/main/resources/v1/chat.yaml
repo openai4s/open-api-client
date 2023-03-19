@@ -29,7 +29,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateChatCompletionResponse'
-
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResponseBadRequest'
       x-oaiMeta:
         name: Create chat completion
         group: chat
@@ -169,7 +174,6 @@ components:
           maximum: 128
           default: 1
           example: 1
-          required: false
           description: How many chat completion choices to generate for each input message.
         stream:
           description: >
@@ -206,7 +210,6 @@ components:
           default: 0
           minimum: -2
           maximum: 2
-          required: false
           description:  &completions_presence_penalty_description |
             Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics.
 
@@ -279,6 +282,23 @@ components:
         - created
         - model
         - choices
+
+    ResponseBadRequest:
+      type: object
+      properties:
+        message:
+          type: string
+        type:
+          type: string
+        param:
+          type: string
+          required: false
+        code:
+          type: string
+          required: false
+      required:
+        - message
+        - type
 
 x-oaiMeta:
   groups:
