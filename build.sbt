@@ -9,6 +9,7 @@ val logbackClassicV = "1.2.3"
 
 inThisBuild(List(
   organization := "io.github.openai4s",
+  homepage := Some(url("https://github.com/openai4s/open-api-client")),
   licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
   developers := List(
     Developer(
