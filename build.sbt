@@ -18,7 +18,6 @@ inThisBuild(List(
       url("https://github.com/paualarco")
     )
   ),
-  publish / skip := true
 ))
 
 lazy val client = project
