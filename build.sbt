@@ -1,18 +1,16 @@
 
 val CatsVersion             = "2.6.1"
 val ScalaCheckVersion       = "1.15.4"
-val BetterMonadicForVersion = "0.3.1"
 val ScalaTestVersion        = "3.2.9"
 val ScalaTestPlusVersion    = "3.2.9.0"
 val http4sV = "0.23.18"
 val circeV = "0.14.4"
 val logbackClassicV = "1.2.3"
-val AkkaActor = "2.6.20"
-val AkkaHttp = "10.2.10"
 
 lazy val client = project
-  .in(file("client"))
+  .in(file("open-api-client"))
   .settings(
+    name:= "open-api-client",
     scalaVersion := "2.12.14",
     crossScalaVersions := Seq("2.12.14", "2.13.6", "3.0.2"),
     Global / onChangedBuildSource := ReloadOnSourceChanges,
