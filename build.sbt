@@ -34,7 +34,7 @@ lazy val client = project
     Compile / guardrailTasks := List(
      // ScalaClient(file("client/src/main/resources/v1/completions.yaml"), encodeOptionalAs = codingOptional,
      //   decodeOptionalAs = codingRequiredNullable, pkg="io.github.openai4s.v1.completions", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
-      ScalaClient(file("client/src/main/resources/v1/chat.yaml"), encodeOptionalAs = codingOptional,
+      ScalaClient(file("open-api-client/src/main/resources/v1/chat.yaml"), encodeOptionalAs = codingOptional,
         decodeOptionalAs = codingRequiredNullable, pkg="io.github.openai4s.v1.chat", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
     ),
     // Adding dependencies in order to force Scala Steward to help us
