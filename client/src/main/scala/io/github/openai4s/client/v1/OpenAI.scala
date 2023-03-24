@@ -26,7 +26,9 @@ class OpenAI[F[_]](apiKey: ApiKey, host: OpenAIHost = OpenAIHost.default)(implic
    *
    * @return a new `ChatClient` instance
    */
-  val chatClient: ChatClient[F] = new ChatClient(auth, host)(F, httpClient)
+  val chat: ChatClient[F] = new ChatClient(auth, host)(F, httpClient)
+
+  val completions: CompletionsClient[F] = new CompletionsClient(auth, host)(F, httpClient)
 
 }
 

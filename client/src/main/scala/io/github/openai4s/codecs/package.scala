@@ -30,8 +30,7 @@ package object codecs {
     }
   implicit val promptDecoderOpt: Decoder[Option[Prompt]] = decodeOption(promptDecoder)
 
-  //implicit val promptEncoder: Encoder[Option[Prompt]] = new Encoder[Prompt]
-
+  implicit val promptEncoder: Encoder[Prompt] = ???
 
   implicit val stopDecoder: Decoder[Stop] = {
     val left:  Decoder[Stop]= decodeString.map(Left.apply)
