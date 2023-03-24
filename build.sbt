@@ -20,6 +20,9 @@ inThisBuild(List(
   ),
 ))
 
+ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
+sonatypeRepository := "https://s01.oss.sonatype.org/service/local"
+
 lazy val client = project
   .in(file("open-api-client"))
   .settings(
