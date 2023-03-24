@@ -7,6 +7,20 @@ val http4sV = "0.23.18"
 val circeV = "0.14.4"
 val logbackClassicV = "1.2.3"
 
+inThisBuild(List(
+  organization := "io.github.openai4s",
+  licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
+  developers := List(
+    Developer(
+      "paualarco",
+      "Pau Alarcón Cerdan",
+      "pau.alarcon@gmail.com",
+      url("https://github.com/paualarco")
+    )
+  ),
+  publish / skip := true
+))
+
 lazy val client = project
   .in(file("open-api-client"))
   .settings(
@@ -15,18 +29,6 @@ lazy val client = project
     crossScalaVersions := Seq("2.12.14", "2.13.6", "3.0.2"),
     Global / onChangedBuildSource := ReloadOnSourceChanges,
     scalacOptions += "-Wconf:any:s",
-    organization := "io.github.openai4s",
-    licenses := List("Apache-2.0" -> url("http://www.apache.org/licenses/LICENSE-2.0")),
-    developers := List(
-      Developer(
-        "paualarco",
-        "Pau Alarcón Cerdan",
-        "pau.alarcon@gmail.com",
-        url("https://github.com/paualarco")
-      )
-    ),
-    sonatypeCredentialHost := "s01.oss.sonatype.org",
-    sonatypeRepository := "https://s01.oss.sonatype.org/service/local",
     Compile / guardrailTasks := List(
      // ScalaClient(file("client/src/main/resources/v1/completions.yaml"), encodeOptionalAs = codingOptional,
      //   decodeOptionalAs = codingRequiredNullable, pkg="io.github.openai4s.v1.completions", framework="http4s", tracing = false, imports = List("_root_.io.github.openai4s.codecs._")),
