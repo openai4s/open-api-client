@@ -28,7 +28,7 @@ lazy val client = project
   .settings(
     name:= "open-api-client",
     scalaVersion := "2.12.14",
-    crossScalaVersions := Seq("2.12.14", "2.13.6", "3.0.2"),
+    crossScalaVersions := Seq("2.12.14", "2.13.6"),
     Global / onChangedBuildSource := ReloadOnSourceChanges,
     scalacOptions += "-Wconf:any:s",
     Compile / guardrailTasks := List(
